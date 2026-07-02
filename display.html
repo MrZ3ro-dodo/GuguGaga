@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualização de Vida</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="display-page">
+    <div class="health-overlay">
+      <div class="health-card">
+        <div class="health-label">
+          <span id="healthLabel">HP</span>
+          <span id="healthText">80 / 100</span>
+        </div>
+        <div class="health-bar">
+          <div id="healthFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const CHANNEL_NAME = "health-sync";
+      const storageKey = "health-state";
+      const broadcastChannel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+      const state = {
+        currentHp: 80,
+        maxHp: 100,
+        color: "#22c55e",
+        label: "HP",
+        displayMode: "values"
+      };
+
+      const healthLabel = document.getElementById("healthLabel");
+      const healthText = document.getElementById("healthText");
+      const healthFill = document.getElementById("healthFill");
+      const healthBar = document.querySelector(".health-bar");
+
+      function clampCurrent() {
+        state.currentHp = Math.max(0, Math.min(state.currentHp, state.maxHp));
+      }
+
+      function render() {
+        clampCurrent();
+        const percent = state.maxHp > 0 ? Math.max(0, (state.currentHp / state.maxHp) * 100) : 0;
+        healthLabel.textContent = state.label;
+        if (state.displayMode === "values") {
+          healthText.textContent = `${state.currentHp} / ${state.maxHp}`;
+        } else if (state.displayMode === "hidden") {
+          healthText.textContent = "";
+        } else {
+          const damage = Math.max(0, state.maxHp - state.currentHp);
+          healthText.textContent = `${damage} Dano`;
+        }
+        healthFill.style.width = "100%";
+        healthFill.style.height = `${percent}%`;
+        healthFill.style.background = state.color;
+        healthBar.style.borderRadius = "4px";
+        healthFill.style.borderRadius = "4px";
+      }
+
+      function applyState(nextState) {
+        Object.assign(state, nextState);
+        clampCurrent();
+        localStorage.setItem(storageKey, JSON.stringify(state));
+        render();
+      }
+
+      function applyQueryState() {
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has("currentHp")) {
+          return false;
+        }
+
+        applyState({
+          currentHp: Number(params.get("currentHp") || 0),
+          maxHp: Number(params.get("maxHp") || 100),
+          color: params.get("color") || "#22c55e",
+          label: params.get("label") || "HP",
+          displayMode: params.get("displayMode") || "values"
+        });
+        return true;
+      }
+
+      function tryLoadState(attempt = 0) {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          applyState(JSON.parse(saved));
+          return;
+        }
+
+        if (attempt < 8) {
+          window.setTimeout(() => tryLoadState(attempt + 1), 150);
+          return;
+        }
+
+        render();
+      }
+
+      if (broadcastChannel) {
+        broadcastChannel.addEventListener("message", (event) => {
+          applyState(event.data);
+        });
+      }
+
+      window.addEventListener("storage", (event) => {
+        if (event.key === storageKey && event.newValue) {
+          applyState(JSON.parse(event.newValue));
+        }
+      });
+
+      if (!applyQueryState()) {
+        tryLoadState();
+      }
+    </script>
+  </body>
+</html>

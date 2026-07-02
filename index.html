@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Vida</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <h1>Controle de Vida</h1>
+      <p>Altere os valores aqui e a outra página atualiza em tempo real.</p>
+      <button id="openDisplayBtn" type="button">Abrir visualização</button>
+
+      <label for="currentHp">Vida atual (percentual)</label>
+      <input id="currentHp" type="range" min="0" max="100" step="1" value="80" />
+
+      <div class="value-row">
+        <label>
+          Vida atual (número)
+          <input id="currentHpNumber" type="number" min="0" max="1000" value="80" />
+        </label>
+        <label>
+          Vida máxima
+          <input id="maxHp" type="number" min="1" max="1000" value="100" />
+        </label>
+      </div>
+
+      <label>
+        Cor da barra
+        <input id="barColor" type="color" value="#22c55e" />
+      </label>
+
+      <label>
+        Texto da barra
+        <input id="barLabel" type="text" value="HP" maxlength="20" />
+      </label>
+
+      <div class="display-mode-group" role="radiogroup" aria-label="Modo de demonstração da barra">
+        <span class="field-label">Modo de demonstração</span>
+        <label class="mode-option">
+          <input type="radio" name="displayMode" value="values" checked />
+          <span>Mostrar números</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="displayMode" value="hidden" />
+          <span>Só a barra</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="displayMode" value="damage" />
+          <span>Barra + dano</span>
+        </label>
+      </div>
+
+      <div class="preview">
+        <div class="preview-bar">
+          <div id="previewFill">80 / 100</div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const CHANNEL_NAME = "health-sync";
+      const storageKey = "health-state";
+      const broadcastChannel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+      const state = {
+        currentHp: 80,
+        maxHp: 100,
+        color: "#22c55e",
+        label: "HP",
+        displayMode: "values"
+      };
+
+      const currentHpInput = document.getElementById("currentHp");
+      const currentHpNumber = document.getElementById("currentHpNumber");
+      const maxHpInput = document.getElementById("maxHp");
+      const barColorInput = document.getElementById("barColor");
+      const barLabelInput = document.getElementById("barLabel");
+      const previewFill = document.getElementById("previewFill");
+      const previewBar = document.querySelector(".preview-bar");
+      const openDisplayBtn = document.getElementById("openDisplayBtn");
+      const displayModeInputs = Array.from(document.querySelectorAll('input[name="displayMode"]'));
+
+      function clampCurrent() {
+        state.currentHp = Math.max(0, Math.min(state.currentHp, state.maxHp));
+      }
+
+      function getPercent() {
+        return state.maxHp > 0 ? Math.max(0, Math.min(100, (state.currentHp / state.maxHp) * 100)) : 0;
+      }
+
+      function syncControls() {
+        currentHpInput.value = String(Math.round(getPercent()));
+        currentHpNumber.value = state.currentHp;
+        maxHpInput.value = state.maxHp;
+        barColorInput.value = state.color;
+        barLabelInput.value = state.label;
+        displayModeInputs.forEach((input) => {
+          input.checked = input.value === state.displayMode;
+        });
+      }
+
+      function getDisplayText() {
+        if (state.displayMode === "hidden") {
+          return "";
+        }
+
+        if (state.displayMode === "damage") {
+          const damage = Math.max(0, state.maxHp - state.currentHp);
+          return `${damage} Dano`;
+        }
+
+        return `${state.currentHp} / ${state.maxHp}`;
+      }
+
+      function syncPreview() {
+        const percent = getPercent();
+        previewFill.style.width = `${percent}%`;
+        previewFill.style.background = state.color;
+        previewFill.textContent = getDisplayText();
+        previewBar.style.background = "rgba(255,255,255,0.12)";
+        previewBar.style.borderRadius = "4px";
+        previewFill.style.borderRadius = "4px";
+      }
+
+      function publishState() {
+        clampCurrent();
+        localStorage.setItem(storageKey, JSON.stringify(state));
+        if (broadcastChannel) {
+          broadcastChannel.postMessage(state);
+        }
+        syncControls();
+        syncPreview();
+      }
+
+      function applyState(nextState) {
+        Object.assign(state, nextState);
+        clampCurrent();
+        syncControls();
+        syncPreview();
+      }
+
+      function readInputs() {
+        state.currentHp = Number(currentHpNumber.value);
+        state.maxHp = Number(maxHpInput.value) || 1;
+        state.color = barColorInput.value;
+        state.label = barLabelInput.value || "HP";
+        state.displayMode = displayModeInputs.find((input) => input.checked)?.value || "values";
+      }
+
+      currentHpInput.addEventListener("input", () => {
+        const percent = Number(currentHpInput.value);
+        state.currentHp = Math.round((percent / 100) * state.maxHp);
+        publishState();
+      });
+
+      currentHpNumber.addEventListener("input", () => {
+        readInputs();
+        publishState();
+      });
+
+      maxHpInput.addEventListener("input", () => {
+        readInputs();
+        publishState();
+      });
+
+      barColorInput.addEventListener("input", () => {
+        readInputs();
+        publishState();
+      });
+
+      barLabelInput.addEventListener("input", () => {
+        readInputs();
+        publishState();
+      });
+
+      displayModeInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          readInputs();
+          publishState();
+        });
+      });
+
+      openDisplayBtn.addEventListener("click", () => {
+        const params = new URLSearchParams({
+          currentHp: String(state.currentHp),
+          maxHp: String(state.maxHp),
+          color: state.color,
+          label: state.label,
+          displayMode: state.displayMode
+        });
+        window.open(`display.html?${params.toString()}`, "_blank", "noopener,noreferrer");
+      });
+
+      window.addEventListener("storage", (event) => {
+        if (event.key === storageKey && event.newValue) {
+          applyState(JSON.parse(event.newValue));
+        }
+      });
+
+      if (broadcastChannel) {
+        broadcastChannel.addEventListener("message", (event) => {
+          applyState(event.data);
+        });
+      }
+
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        applyState(JSON.parse(saved));
+      } else {
+        publishState();
+      }
+    </script>
+  </body>
+</html>
