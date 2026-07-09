@@ -598,27 +598,27 @@ input[type="number"], input[type="text"] {
   backdrop-filter: blur(6px);
 }
 
-.display-character-slot img {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+.display-page .display-character-slot img {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
   object-fit: cover;
   flex-shrink: 0;
 }
 
-.display-character-slot .character-slot-body {
+.display-page .display-character-slot .character-slot-body {
   gap: 0.2rem;
 }
 
-.display-character-slot .character-slot-name {
-  font-size: 0.78rem;
+.display-page .display-character-slot .character-slot-name {
+  font-size: 0.88rem;
 }
 
-.display-character-slot .character-stat {
-  font-size: 0.62rem;
+.display-page .display-character-slot .character-stat {
+  font-size: 0.56rem;
 }
 
-.display-character-slot .character-bar-track {
+.display-page .display-character-slot .character-bar-track {
   height: 5px;
 }
 

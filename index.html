@@ -16,9 +16,10 @@
       <input id="currentHp" type="range" min="0" max="100" step="1" value="80" />
 
       <div class="value-row">
-        <label>
+        <label class="number-with-confirm">
           Vida atual (número)
           <input id="currentHpNumber" type="number" min="0" max="1000" value="80" />
+          <button id="confirmCurrentHpBtn" type="button" class="confirm-btn">Confirmar</button>
         </label>
         <label>
           Vida máxima
@@ -143,6 +144,7 @@
 
       const currentHpInput = document.getElementById("currentHp");
       const currentHpNumber = document.getElementById("currentHpNumber");
+      const confirmCurrentHpBtn = document.getElementById("confirmCurrentHpBtn");
       const maxHpInput = document.getElementById("maxHp");
       const barColorInput = document.getElementById("barColor");
       const barColorValue = document.getElementById("barColorValue");
@@ -391,10 +393,46 @@
         publishState();
       });
 
+      // Atualiza posição do slider enquanto digita, mas só publica ao confirmar
       currentHpNumber.addEventListener("input", () => {
+        const val = Number(currentHpNumber.value) || 0;
+        const clamped = Math.max(0, Math.min(val, state.maxHp || 1));
+        const percent = state.maxHp > 0 ? Math.round((clamped / state.maxHp) * 100) : 0;
+        // atualiza o slider visual
+        currentHpInput.value = String(percent);
+        // atualiza o estado em memória para refletir na pré-visualização, sem publicar
+        state.currentHp = clamped;
+        syncPreview();
+      });
+
+      // Publica o estado ao soltar Enter (keyup) — garante que o valor já tenha sido aplicado
+      currentHpNumber.addEventListener("keyup", (event) => {
+        if (event.key === "Enter" || event.keyCode === 13) {
+          event.preventDefault();
+          readInputs();
+          publishState();
+        }
+      });
+
+      // Também publica ao perder o foco (blur) e ao alterar (change)
+      currentHpNumber.addEventListener("blur", () => {
         readInputs();
         publishState();
       });
+
+      currentHpNumber.addEventListener("change", () => {
+        readInputs();
+        publishState();
+      });
+
+      // Botão de confirmar para aplicar o valor numérico
+      if (confirmCurrentHpBtn) {
+        confirmCurrentHpBtn.addEventListener("click", () => {
+          readInputs();
+          publishState();
+          currentHpNumber.focus();
+        });
+      }
 
       maxHpInput.addEventListener("input", () => {
         readInputs();
