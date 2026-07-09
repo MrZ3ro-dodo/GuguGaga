@@ -27,14 +27,40 @@
       </div>
 
       <label>
-        Cor da barra
-        <input id="barColor" type="color" value="#22c55e" />
-      </label>
-
-      <label>
         Texto da barra
         <input id="barLabel" type="text" value="HP" maxlength="20" />
       </label>
+
+      <div class="color-picker-grid">
+        <div class="color-picker-card">
+          <div class="color-picker-header">
+            <span class="field-label">Cor da barra</span>
+            <div class="color-picker-inline">
+              <input id="barColor" class="color-input" type="color" value="#22c55e" />
+              <span id="barColorValue" class="color-value">#22c55e</span>
+            </div>
+          </div>
+          <div class="color-preview-bar">
+            <div id="barPreviewFill" class="color-preview-fill"></div>
+            <div class="color-preview-text">
+              <span id="barPreviewLabel">HP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-picker-card">
+          <div class="color-picker-header">
+            <span class="field-label">Outline do texto</span>
+            <div class="color-picker-inline">
+              <input id="textOutlineColor" class="color-input" type="color" value="#111827" />
+              <span id="textOutlineValue" class="color-value">#111827</span>
+            </div>
+          </div>
+          <div class="outline-preview-card">
+            <span id="outlinePreviewText">HP</span>
+          </div>
+        </div>
+      </div>
 
       <div class="display-mode-group" role="radiogroup" aria-label="Modo de demonstração da barra">
         <span class="field-label">Modo de demonstração</span>
@@ -52,9 +78,35 @@
         </label>
       </div>
 
+      <div class="image-upload-section">
+        <div class="field-label">Imagem para a tela</div>
+        <div id="imageDropzone" class="image-dropzone" tabindex="0" role="button" aria-label="Enviar imagem para a tela">
+          <input id="imageInput" type="file" accept="image/*" hidden />
+          <div class="image-dropzone-content">
+            <strong>Arraste uma imagem aqui</strong>
+            <span>ou clique para procurar no dispositivo</span>
+            <small>Também funciona colando a imagem com Ctrl+V</small>
+          </div>
+          <img id="imagePreview" class="image-preview" alt="Pré-visualização da imagem" />
+        </div>
+        <button id="clearImageBtn" class="secondary-btn" type="button">Remover imagem</button>
+      </div>
+
+      <section class="character-slots-panel" aria-label="Slots de personagens">
+        <div class="panel-section-title">
+          <h2>Personagens</h2>
+          <p>10 slots com imagem, nome, vida e sanidade.</p>
+        </div>
+        <div id="characterSlots" class="character-slots"></div>
+      </section>
+
       <div class="preview">
-        <div class="preview-bar">
-          <div id="previewFill">80 / 100</div>
+        <div id="previewBar" class="preview-bar">
+          <div id="previewFill"></div>
+          <div class="preview-bar-text">
+            <span id="previewLabel">HP</span>
+            <span id="previewValue">80 / 100</span>
+          </div>
         </div>
       </div>
     </main>
@@ -64,23 +116,54 @@
       const storageKey = "health-state";
       const broadcastChannel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
 
+      function createCharacter(name, index, id = index + 1) {
+        return {
+          id,
+          name,
+          imageDataUrl: createAvatarDataUrl(name, index),
+          vitality: 70 + ((index * 11) % 25),
+          vitalityMax: 100,
+          lucidity: 55 + ((index * 7) % 35),
+          lucidityMax: 100
+        };
+      }
+
+      const initialCharacters = [createCharacter("Personagem 1", 0)];
+
       const state = {
         currentHp: 80,
         maxHp: 100,
         color: "#22c55e",
         label: "HP",
-        displayMode: "values"
+        textOutlineColor: "#111827",
+        displayMode: "values",
+        imageDataUrl: "",
+        characters: initialCharacters
       };
 
       const currentHpInput = document.getElementById("currentHp");
       const currentHpNumber = document.getElementById("currentHpNumber");
       const maxHpInput = document.getElementById("maxHp");
       const barColorInput = document.getElementById("barColor");
+      const barColorValue = document.getElementById("barColorValue");
       const barLabelInput = document.getElementById("barLabel");
+      const textOutlineColorInput = document.getElementById("textOutlineColor");
+      const textOutlineValue = document.getElementById("textOutlineValue");
+      const barPreviewFill = document.getElementById("barPreviewFill");
+      const barPreviewLabel = document.getElementById("barPreviewLabel");
+      const outlinePreviewText = document.getElementById("outlinePreviewText");
       const previewFill = document.getElementById("previewFill");
-      const previewBar = document.querySelector(".preview-bar");
+      const previewLabel = document.getElementById("previewLabel");
+      const previewValue = document.getElementById("previewValue");
+      const previewBar = document.getElementById("previewBar");
       const openDisplayBtn = document.getElementById("openDisplayBtn");
       const displayModeInputs = Array.from(document.querySelectorAll('input[name="displayMode"]'));
+      const imageDropzone = document.getElementById("imageDropzone");
+      const imageInput = document.getElementById("imageInput");
+      const imagePreview = document.getElementById("imagePreview");
+      const clearImageBtn = document.getElementById("clearImageBtn");
+      const characterSlotsContainer = document.getElementById("characterSlots");
+      let activeCharacterIndex = null;
 
       function clampCurrent() {
         state.currentHp = Math.max(0, Math.min(state.currentHp, state.maxHp));
@@ -95,10 +178,28 @@
         currentHpNumber.value = state.currentHp;
         maxHpInput.value = state.maxHp;
         barColorInput.value = state.color;
+        barColorValue.textContent = state.color;
         barLabelInput.value = state.label;
+        textOutlineColorInput.value = state.textOutlineColor || "#111827";
+        textOutlineValue.textContent = state.textOutlineColor || "#111827";
         displayModeInputs.forEach((input) => {
           input.checked = input.value === state.displayMode;
         });
+      }
+
+      function createAvatarDataUrl(name, index) {
+        const colors = ["#2563eb", "#f59e0b", "#ec4899", "#14b8a6", "#a855f7", "#ef4444", "#10b981", "#0ea5e9", "#f97316", "#8b5cf6"];
+        const color = colors[index % colors.length];
+        const accent = colors[(index + 3) % colors.length];
+        const initial = (name || `P${index + 1}`).trim().charAt(0).toUpperCase();
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+            <rect width="128" height="128" rx="28" fill="${color}" />
+            <circle cx="64" cy="46" r="24" fill="${accent}" opacity="0.95" />
+            <path d="M24 108c8-20 20-32 40-32s32 12 40 32" fill="${accent}" opacity="0.92" />
+            <text x="64" y="116" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="white">${initial}</text>
+          </svg>`;
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
       }
 
       function getDisplayText() {
@@ -114,14 +215,89 @@
         return `${state.currentHp} / ${state.maxHp}`;
       }
 
+      function renderCharacterSlots() {
+        const slotsMarkup = state.characters
+          .map((character, index) => {
+            const vitality = Number(character.vitality ?? character.hp ?? 0);
+            const vitalityMax = Number(character.vitalityMax ?? 100);
+            const lucidity = Number(character.lucidity ?? character.sanity ?? 0);
+            const lucidityMax = Number(character.lucidityMax ?? 100);
+            const vitalityPercent = vitalityMax > 0 ? Math.max(0, Math.min(100, (vitality / vitalityMax) * 100)) : 0;
+            const lucidityPercent = lucidityMax > 0 ? Math.max(0, Math.min(100, (lucidity / lucidityMax) * 100)) : 0;
+
+            return `
+              <article class="character-slot">
+                <div class="character-slot-dropzone" data-character-index="${index}" tabindex="0" role="button" aria-label="Alterar imagem de ${character.name}">
+                  <input class="character-file-input" data-character-index="${index}" type="file" accept="image/*" hidden />
+                  <img src="${character.imageDataUrl}" alt="Avatar de ${character.name}" />
+                  <div class="character-slot-overlay">
+                    <span>Arraste, cole ou clique</span>
+                  </div>
+                </div>
+                <div class="character-slot-body">
+                  <label class="character-name-field">
+                    <span>Nome</span>
+                    <input class="character-name-input" data-character-index="${index}" type="text" value="${character.name}" maxlength="24" />
+                  </label>
+                  <div class="character-stat">
+                    <span>Vitalidade</span>
+                    <div class="character-bar-track">
+                      <div class="character-bar-fill hp" style="width: ${vitalityPercent}%"></div>
+                    </div>
+                    <div class="character-stat-inputs">
+                      <input data-character-index="${index}" data-field="vitalityCurrent" type="number" min="0" max="1000" value="${vitality}" />
+                      <input data-character-index="${index}" data-field="vitalityMax" type="number" min="1" max="1000" value="${vitalityMax}" />
+                    </div>
+                  </div>
+                  <div class="character-stat">
+                    <span>Lucidez</span>
+                    <div class="character-bar-track">
+                      <div class="character-bar-fill sanity" style="width: ${lucidityPercent}%"></div>
+                    </div>
+                    <div class="character-stat-inputs">
+                      <input data-character-index="${index}" data-field="lucidityCurrent" type="number" min="0" max="1000" value="${lucidity}" />
+                      <input data-character-index="${index}" data-field="lucidityMax" type="number" min="1" max="1000" value="${lucidityMax}" />
+                    </div>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        const canAddMore = state.characters.length < 10;
+        characterSlotsContainer.innerHTML = `${slotsMarkup}<button class="character-add-btn" id="addCharacterBtn" type="button" aria-label="Adicionar personagem" ${canAddMore ? "" : "disabled"}>${canAddMore ? "+" : "Máx"}</button>`;
+      }
+
       function syncPreview() {
         const percent = getPercent();
+        const outlineColor = state.textOutlineColor || "#111827";
         previewFill.style.width = `${percent}%`;
         previewFill.style.background = state.color;
-        previewFill.textContent = getDisplayText();
+        previewBar.style.setProperty("--outline-color", outlineColor);
+        previewLabel.textContent = state.label;
+        previewValue.textContent = getDisplayText();
+        barPreviewFill.style.width = `${percent}%`;
+        barPreviewFill.style.background = state.color;
+        barPreviewLabel.textContent = state.label;
+        outlinePreviewText.style.setProperty("--outline-color", outlineColor);
+        outlinePreviewText.textContent = state.label;
         previewBar.style.background = "rgba(255,255,255,0.12)";
-        previewBar.style.borderRadius = "4px";
-        previewFill.style.borderRadius = "4px";
+        previewBar.style.borderRadius = "999px";
+        previewFill.style.borderRadius = "999px";
+      }
+
+      function updateImagePreview() {
+        if (!state.imageDataUrl) {
+          imagePreview.removeAttribute("src");
+          imagePreview.classList.remove("is-visible");
+          imageDropzone.classList.remove("has-image");
+          return;
+        }
+
+        imagePreview.src = state.imageDataUrl;
+        imagePreview.classList.add("is-visible");
+        imageDropzone.classList.add("has-image");
       }
 
       function publishState() {
@@ -132,6 +308,8 @@
         }
         syncControls();
         syncPreview();
+        updateImagePreview();
+        renderCharacterSlots();
       }
 
       function applyState(nextState) {
@@ -139,6 +317,8 @@
         clampCurrent();
         syncControls();
         syncPreview();
+        updateImagePreview();
+        renderCharacterSlots();
       }
 
       function readInputs() {
@@ -146,7 +326,63 @@
         state.maxHp = Number(maxHpInput.value) || 1;
         state.color = barColorInput.value;
         state.label = barLabelInput.value || "HP";
+        state.textOutlineColor = textOutlineColorInput.value || "#111827";
         state.displayMode = displayModeInputs.find((input) => input.checked)?.value || "values";
+      }
+
+      function handleImageFile(file) {
+        if (!file || !file.type.startsWith("image/")) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.imageDataUrl = String(reader.result || "");
+          publishState();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function handleCharacterImageFile(file, index) {
+        if (!file || !file.type.startsWith("image/") || Number.isNaN(index) || !state.characters[index]) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.characters[index].imageDataUrl = String(reader.result || "");
+          publishState();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function updateCharacterStat(index, field, value) {
+        const character = state.characters[index];
+        if (!character) {
+          return;
+        }
+
+        if (field === "vitalityCurrent") {
+          character.vitality = Math.max(0, Number(value) || 0);
+        } else if (field === "vitalityMax") {
+          character.vitalityMax = Math.max(1, Number(value) || 1);
+        } else if (field === "lucidityCurrent") {
+          character.lucidity = Math.max(0, Number(value) || 0);
+        } else if (field === "lucidityMax") {
+          character.lucidityMax = Math.max(1, Number(value) || 1);
+        }
+
+        publishState();
+      }
+
+      function addCharacter() {
+        if (state.characters.length >= 10) {
+          return;
+        }
+
+        const nextIndex = state.characters.length;
+        state.characters.push(createCharacter(`Personagem ${nextIndex + 1}`, nextIndex, nextIndex + 1));
+        publishState();
       }
 
       currentHpInput.addEventListener("input", () => {
@@ -175,11 +411,165 @@
         publishState();
       });
 
+      textOutlineColorInput.addEventListener("input", () => {
+        readInputs();
+        publishState();
+      });
+
       displayModeInputs.forEach((input) => {
         input.addEventListener("change", () => {
           readInputs();
           publishState();
         });
+      });
+
+      imageDropzone.addEventListener("click", () => {
+        imageInput.click();
+      });
+
+      imageDropzone.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          imageInput.click();
+        }
+      });
+
+      imageDropzone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        imageDropzone.classList.add("drag-active");
+      });
+
+      imageDropzone.addEventListener("dragleave", () => {
+        imageDropzone.classList.remove("drag-active");
+      });
+
+      imageDropzone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        imageDropzone.classList.remove("drag-active");
+        const [file] = event.dataTransfer?.files || [];
+        handleImageFile(file);
+      });
+
+      imageInput.addEventListener("change", (event) => {
+        const [file] = event.target.files || [];
+        handleImageFile(file);
+        event.target.value = "";
+      });
+
+      clearImageBtn.addEventListener("click", () => {
+        state.imageDataUrl = "";
+        publishState();
+      });
+
+      characterSlotsContainer.addEventListener("click", (event) => {
+        const dropzone = event.target.closest(".character-slot-dropzone");
+        if (!dropzone) {
+          return;
+        }
+
+        activeCharacterIndex = Number(dropzone.dataset.characterIndex);
+        const input = dropzone.querySelector(".character-file-input");
+        input.click();
+      });
+
+      characterSlotsContainer.addEventListener("keydown", (event) => {
+        const dropzone = event.target.closest(".character-slot-dropzone");
+        if (!dropzone || (event.key !== "Enter" && event.key !== " ")) {
+          return;
+        }
+
+        event.preventDefault();
+        activeCharacterIndex = Number(dropzone.dataset.characterIndex);
+        const input = dropzone.querySelector(".character-file-input");
+        input.click();
+      });
+
+      characterSlotsContainer.addEventListener("dragover", (event) => {
+        const dropzone = event.target.closest(".character-slot-dropzone");
+        if (!dropzone) {
+          return;
+        }
+
+        event.preventDefault();
+        dropzone.classList.add("drag-active");
+      });
+
+      characterSlotsContainer.addEventListener("dragleave", (event) => {
+        const dropzone = event.target.closest(".character-slot-dropzone");
+        if (!dropzone) {
+          return;
+        }
+
+        dropzone.classList.remove("drag-active");
+      });
+
+      characterSlotsContainer.addEventListener("drop", (event) => {
+        const dropzone = event.target.closest(".character-slot-dropzone");
+        if (!dropzone) {
+          return;
+        }
+
+        event.preventDefault();
+        dropzone.classList.remove("drag-active");
+        const [file] = event.dataTransfer?.files || [];
+        activeCharacterIndex = Number(dropzone.dataset.characterIndex);
+        handleCharacterImageFile(file, activeCharacterIndex);
+      });
+
+      characterSlotsContainer.addEventListener("change", (event) => {
+        const input = event.target.closest(".character-file-input");
+        if (!input) {
+          return;
+        }
+
+        const [file] = event.target.files || [];
+        handleCharacterImageFile(file, Number(input.dataset.characterIndex));
+        event.target.value = "";
+      });
+
+      characterSlotsContainer.addEventListener("input", (event) => {
+        const statInput = event.target.closest("input[data-field]");
+        if (!statInput) {
+          return;
+        }
+
+        const index = Number(statInput.dataset.characterIndex);
+        updateCharacterStat(index, statInput.dataset.field, statInput.value);
+      });
+
+      characterSlotsContainer.addEventListener("change", (event) => {
+        const nameInput = event.target.closest(".character-name-input");
+        if (!nameInput) {
+          return;
+        }
+
+        const index = Number(nameInput.dataset.characterIndex);
+        const character = state.characters[index];
+        if (!character) {
+          return;
+        }
+
+        character.name = nameInput.value || `Personagem ${index + 1}`;
+        publishState();
+      });
+
+      characterSlotsContainer.addEventListener("click", (event) => {
+        const addButton = event.target.closest("#addCharacterBtn");
+        if (addButton) {
+          addCharacter();
+        }
+      });
+
+      window.addEventListener("paste", (event) => {
+        const clipboardFiles = Array.from(event.clipboardData?.files || []);
+        const imageFile = clipboardFiles.find((file) => file.type.startsWith("image/"));
+        if (imageFile && activeCharacterIndex !== null && state.characters[activeCharacterIndex]) {
+          event.preventDefault();
+          handleCharacterImageFile(imageFile, activeCharacterIndex);
+        } else if (imageFile) {
+          event.preventDefault();
+          handleImageFile(imageFile);
+        }
       });
 
       openDisplayBtn.addEventListener("click", () => {
@@ -188,6 +578,7 @@
           maxHp: String(state.maxHp),
           color: state.color,
           label: state.label,
+          textOutlineColor: state.textOutlineColor || "#111827",
           displayMode: state.displayMode
         });
         window.open(`display.html?${params.toString()}`, "_blank", "noopener,noreferrer");

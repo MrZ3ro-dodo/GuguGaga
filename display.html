@@ -9,14 +9,25 @@
   <body class="display-page">
     <div class="health-overlay">
       <div class="health-card">
-        <div class="health-label">
-          <span id="healthLabel">HP</span>
-          <span id="healthText">80 / 100</span>
-        </div>
         <div class="health-bar">
           <div id="healthFill"></div>
+          <div class="health-bar-text">
+            <span id="healthLabel">HP</span>
+          </div>
+        </div>
+        <div id="healthValueRow" class="health-value-row">
+          <span id="healthText">80 / 100</span>
         </div>
       </div>
+    </div>
+
+    <div class="display-character-board" aria-label="Slots de personagens">
+      <div id="displayLeftColumn" class="display-character-column"></div>
+      <div id="displayRightColumn" class="display-character-column"></div>
+    </div>
+
+    <div id="displayImageWrapper" class="display-image-wrapper" hidden>
+      <img id="displayImage" alt="Imagem enviada para a tela" />
     </div>
 
     <script>
@@ -24,21 +35,116 @@
       const storageKey = "health-state";
       const broadcastChannel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
 
+      function createCharacter(name, index, id = index + 1) {
+        return {
+          id,
+          name,
+          imageDataUrl: createAvatarDataUrl(name, index),
+          vitality: 70 + ((index * 11) % 25),
+          vitalityMax: 100,
+          lucidity: 55 + ((index * 7) % 35),
+          lucidityMax: 100
+        };
+      }
+
+      const initialCharacters = [createCharacter("Personagem 1", 0)];
+
       const state = {
         currentHp: 80,
         maxHp: 100,
         color: "#22c55e",
         label: "HP",
-        displayMode: "values"
+        textOutlineColor: "#111827",
+        displayMode: "values",
+        imageDataUrl: "",
+        characters: initialCharacters
       };
 
       const healthLabel = document.getElementById("healthLabel");
       const healthText = document.getElementById("healthText");
       const healthFill = document.getElementById("healthFill");
       const healthBar = document.querySelector(".health-bar");
+      const healthValueRow = document.getElementById("healthValueRow");
+      const displayImageWrapper = document.getElementById("displayImageWrapper");
+      const displayImage = document.getElementById("displayImage");
+      const displayLeftColumn = document.getElementById("displayLeftColumn");
+      const displayRightColumn = document.getElementById("displayRightColumn");
 
       function clampCurrent() {
         state.currentHp = Math.max(0, Math.min(state.currentHp, state.maxHp));
+      }
+
+      function createAvatarDataUrl(name, index) {
+        const colors = ["#2563eb", "#f59e0b", "#ec4899", "#14b8a6", "#a855f7", "#ef4444", "#10b981", "#0ea5e9", "#f97316", "#8b5cf6"];
+        const color = colors[index % colors.length];
+        const accent = colors[(index + 3) % colors.length];
+        const initial = (name || `P${index + 1}`).trim().charAt(0).toUpperCase();
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+            <rect width="96" height="96" rx="20" fill="${color}" />
+            <circle cx="48" cy="34" r="18" fill="${accent}" opacity="0.95" />
+            <path d="M16 82c6-15 15-24 32-24s26 9 32 24" fill="${accent}" opacity="0.92" />
+            <text x="48" y="86" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="white">${initial}</text>
+          </svg>`;
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+      }
+
+      function getOppositeColor(color) {
+        const cleanColor = (color || "#22c55e").replace("#", "");
+        const hex = cleanColor.length === 3
+          ? cleanColor.split("").map((char) => char + char).join("")
+          : cleanColor;
+
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+
+        const opposite = [255 - r, 255 - g, 255 - b]
+          .map((channel) => Math.max(0, Math.min(255, channel)))
+          .map((channel) => channel.toString(16).padStart(2, "0"))
+          .join("");
+
+        return `#${opposite}`;
+      }
+
+      function renderCharacterSlots() {
+        const leftCharacters = state.characters.slice(0, 5);
+        const rightCharacters = state.characters.slice(5);
+
+        const renderColumn = (characters) => characters
+          .map((character) => {
+            const vitality = Number(character.vitality ?? character.hp ?? 0);
+            const vitalityMax = Number(character.vitalityMax ?? 100);
+            const lucidity = Number(character.lucidity ?? character.sanity ?? 0);
+            const lucidityMax = Number(character.lucidityMax ?? 100);
+            const vitalityPercent = vitalityMax > 0 ? Math.max(0, Math.min(100, (vitality / vitalityMax) * 100)) : 0;
+            const lucidityPercent = lucidityMax > 0 ? Math.max(0, Math.min(100, (lucidity / lucidityMax) * 100)) : 0;
+
+            return `
+              <article class="display-character-slot">
+                <img src="${character.imageDataUrl}" alt="Avatar de ${character.name}" />
+                <div class="character-slot-body">
+                  <strong class="character-slot-name">${character.name}</strong>
+                  <div class="character-stat">
+                    <span>Vitalidade</span>
+                    <div class="character-bar-track">
+                      <div class="character-bar-fill hp" style="width: ${vitalityPercent}%"></div>
+                    </div>
+                  </div>
+                  <div class="character-stat">
+                    <span>Lucidez</span>
+                    <div class="character-bar-track">
+                      <div class="character-bar-fill sanity" style="width: ${lucidityPercent}%"></div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        displayLeftColumn.innerHTML = renderColumn(leftCharacters);
+        displayRightColumn.innerHTML = renderColumn(rightCharacters);
       }
 
       function render() {
@@ -53,11 +159,23 @@
           const damage = Math.max(0, state.maxHp - state.currentHp);
           healthText.textContent = `${damage} Dano`;
         }
-        healthFill.style.width = "100%";
-        healthFill.style.height = `${percent}%`;
+        healthValueRow.hidden = state.displayMode === "hidden";
+        healthFill.style.width = `${percent}%`;
+        healthFill.style.height = "100%";
         healthFill.style.background = state.color;
-        healthBar.style.borderRadius = "4px";
-        healthFill.style.borderRadius = "4px";
+        healthBar.style.setProperty("--health-bar-color", state.color);
+        healthBar.style.setProperty("--health-outline-color", state.textOutlineColor || getOppositeColor(state.color));
+
+        if (state.imageDataUrl) {
+          displayImage.src = state.imageDataUrl;
+          displayImage.alt = "Imagem enviada para a tela";
+          displayImageWrapper.hidden = false;
+        } else {
+          displayImage.removeAttribute("src");
+          displayImageWrapper.hidden = true;
+        }
+
+        renderCharacterSlots();
       }
 
       function applyState(nextState) {
@@ -78,7 +196,9 @@
           maxHp: Number(params.get("maxHp") || 100),
           color: params.get("color") || "#22c55e",
           label: params.get("label") || "HP",
-          displayMode: params.get("displayMode") || "values"
+          textOutlineColor: params.get("textOutlineColor") || "#111827",
+          displayMode: params.get("displayMode") || "values",
+          imageDataUrl: params.get("imageDataUrl") || ""
         });
         return true;
       }
