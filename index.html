@@ -91,6 +91,62 @@
           <img id="imagePreview" class="image-preview" alt="Pré-visualização da imagem" />
         </div>
         <button id="clearImageBtn" class="secondary-btn" type="button">Remover imagem</button>
+
+        <div class="boss-controls-section">
+          <div class="panel-section-title">
+            <h2>Boss</h2>
+            <p>Defina o nome, o movimento e os efeitos do boss.</p>
+          </div>
+          <label class="boss-name-field">
+            <span>Nome do boss</span>
+            <input id="bossNameInput" type="text" value="Boss" maxlength="24" />
+          </label>
+          <label class="boss-movement-field">
+            <span>Movimento da imagem do boss</span>
+            <select id="bossMovementSelect">
+              <option value="none">Nenhum</option>
+              <option value="rotating">Giratório</option>
+              <option value="lateral">Lateral</option>
+              <option value="bugged">Bugado</option>
+            </select>
+          </label>
+          <div class="boss-movement-field">
+            <span>After images do boss</span>
+            <div class="boss-after-image-options" role="group" aria-label="Tipos de after image do boss">
+              <label class="boss-after-image-option">
+                <input type="checkbox" name="bossAfterImageModes" value="bruta" checked />
+                <span>Bruta</span>
+              </label>
+              <label class="boss-after-image-option">
+                <input type="checkbox" name="bossAfterImageModes" value="devanecida" />
+                <span>Devanecida</span>
+              </label>
+              <label class="boss-after-image-option">
+                <input type="checkbox" name="bossAfterImageModes" value="leve" />
+                <span>Leve</span>
+              </label>
+              <label class="boss-after-image-option">
+                <input type="checkbox" name="bossAfterImageModes" value="forte" />
+                <span>Forte</span>
+              </label>
+              <label class="boss-after-image-option">
+                <input type="checkbox" name="bossAfterImageModes" value="colorida" />
+                <span>Colorida</span>
+              </label>
+              <label class="boss-after-image-option">
+                <input type="checkbox" name="bossAfterImageModes" value="arco-íris" />
+                <span>Arco-íris</span>
+              </label>
+            </div>
+            <label id="bossAfterImageColorField" class="boss-after-image-color-field">
+              <span>Cor para after image</span>
+              <div class="boss-after-image-color-inline">
+                <input id="bossAfterImageColorInput" class="color-input" type="color" value="#ff4d4d" />
+                <span id="bossAfterImageColorValue" class="color-value">#ff4d4d</span>
+              </div>
+            </label>
+          </div>
+        </div>
       </div>
 
       <section class="character-slots-panel" aria-label="Slots de personagens">
@@ -101,6 +157,17 @@
         <div id="characterSlots" class="character-slots"></div>
       </section>
 
+      <section class="turn-order-panel" aria-label="Ordem da rodada">
+        <div class="panel-section-title">
+          <h2>Rodada</h2>
+          <p>Arraste os nomes para organizar a ordem e avance a vez com o botão.</p>
+        </div>
+        <div id="turnOrderList" class="turn-order-list" role="list"></div>
+        <div class="turn-order-actions">
+          <button id="nextTurnBtn" type="button" class="secondary-btn">Próximo</button>
+        </div>
+      </section>
+
       <div class="preview">
         <div id="previewBar" class="preview-bar">
           <div id="previewFill"></div>
@@ -109,6 +176,48 @@
             <span id="previewValue">80 / 100</span>
           </div>
         </div>
+
+        <div class="damage-control">
+          <label for="damageAmount" class="damage-label">Dano</label>
+          <div class="damage-control-row">
+            <input id="damageAmount" type="number" min="0" step="1" placeholder="0" />
+            <button id="confirmDamageBtn" type="button" class="secondary-btn">Confirmar</button>
+          </div>
+          <label for="damageEmoji" class="damage-label">Emoji</label>
+          <select id="damageEmoji" class="damage-emoji-select">
+            <option value="💥">💥 Explosão</option>
+            <option value="🔥">🔥 Fogo</option>
+            <option value="⚡">⚡ Raio</option>
+            <option value="💣">💣 Bomba</option>
+            <option value="🗡️">🗡️ Espada</option>
+            <option value="☠️">☠️ Morte</option>
+            <option value="🧠">🧠 Cérebro</option>
+            <option value="🐉">🐉 Dragão</option>
+            <option value="👻">👻 Fantasma</option>
+            <option value="🕸️">🕸️ Teia</option>
+            <option value="🩸">🩸 Sangue</option>
+            <option value="💀">💀 Caveira</option>
+            <option value="🧨">🧨 Granada</option>
+            <option value="☄️">☄️ Cometa</option>
+            <option value="🌪️">🌪️ Tornado</option>
+            <option value="🌋">🌋 Vulcão</option>
+            <option value="❄️">❄️ Gelo</option>
+            <option value="🌊">🌊 Onda</option>
+            <option value="🪓">🪓 Machado</option>
+            <option value="🛡️">🛡️ Escudo</option>
+            <option value="👁️">👁️ Olho</option>
+            <option value="🌀">🌀 Vórtice</option>
+            <option value="💫">💫 Estrela</option>
+            <option value="🌙">🌙 Lua</option>
+            <option value="🌩️">🌩️ Tempestade</option>
+            <option value="🕯️">🕯️ Lamparina</option>
+            <option value="🦇">🦇 Morcego</option>
+            <option value="🧟">🧟 Zumbi</option>
+            <option value="🪬">🪬 Amuleto</option>
+            <option value="☢️">☢️ Radiação</option>
+            <option value="🦠">🦠 Pestilência</option>
+          </select>
+        </div>
       </div>
     </main>
 
@@ -116,6 +225,99 @@
       const CHANNEL_NAME = "health-sync";
       const storageKey = "health-state";
       const broadcastChannel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
+      const EMOJI_AURA_OPTIONS = ["💥", "🔥", "⚡", "💣", "☢️", "☠️", "🧠", "🐉", "👻", "🕸️", "🩸", "💀", "🧨", "☄️", "🌪️", "🌋", "❄️", "👁️", "🪬", "🛡️", "🌊", "🌀", "💫", "🌙", "🌩️"];
+      const EMOJI_AURA_LABELS = {
+        "💥": "Explosão",
+        "🔥": "Fogo",
+        "⚡": "Raio",
+        "💣": "Bomba",
+        "☢️": "Radiação",
+        "☠️": "Morte",
+        "🧠": "Cérebro",
+        "🐉": "Dragão",
+        "👻": "Fantasma",
+        "🕸️": "Teia",
+        "🩸": "Sangue",
+        "💀": "Caveira",
+        "🧨": "Granada",
+        "☄️": "Cometa",
+        "🌪️": "Tornado",
+        "🌋": "Vulcão",
+        "❄️": "Gelo",
+        "👁️": "Olho",
+        "🪬": "Amuleto",
+        "🛡️": "Escudo",
+        "🌊": "Onda",
+        "🌀": "Vórtice",
+        "💫": "Estrela",
+        "🌙": "Lua",
+        "🌩️": "Tempestade"
+      };
+
+      const BOSS_AFTER_IMAGE_OPTIONS = ["bruta", "devanecida", "leve", "forte", "colorida", "arco-íris"];
+
+      function normalizeBossAfterImageModes(rawValue, fallback = [], changedValue = null) {
+        const values = Array.isArray(rawValue)
+          ? rawValue
+          : typeof rawValue === "string"
+            ? rawValue.split(",")
+            : [];
+
+        const normalized = values
+          .map((value) => {
+            const normalizedValue = String(value || "").trim().toLowerCase();
+            if (normalizedValue === "soft") {
+              return "leve";
+            }
+            if (normalizedValue === "strong") {
+              return "forte";
+            }
+            return normalizedValue;
+          })
+          .filter((value) => BOSS_AFTER_IMAGE_OPTIONS.includes(value));
+
+        const incompatibleGroups = [
+          ["bruta", "devanecida"],
+          ["leve", "forte"],
+          ["colorida", "arco-íris"]
+        ];
+
+        incompatibleGroups.forEach((group) => {
+          const [left, right] = group;
+          const hasLeft = normalized.includes(left);
+          const hasRight = normalized.includes(right);
+          if (hasLeft && hasRight) {
+            if (changedValue === left) {
+              normalized.splice(normalized.indexOf(right), 1);
+            } else if (changedValue === right) {
+              normalized.splice(normalized.indexOf(left), 1);
+            }
+          }
+        });
+
+        if (!normalized.length && Array.isArray(rawValue) && rawValue.length === 0) {
+          return [];
+        }
+
+        if (!normalized.length) {
+          const fallbackValues = Array.isArray(fallback)
+            ? fallback
+            : [fallback];
+          return fallbackValues
+            .map((value) => String(value || "").trim().toLowerCase())
+            .filter((value) => BOSS_AFTER_IMAGE_OPTIONS.includes(value));
+        }
+
+        return normalized;
+      }
+
+      function buildEmojiOptions(selectedValue = "") {
+        return EMOJI_AURA_OPTIONS.map((emoji) => {
+          const label = EMOJI_AURA_LABELS[emoji] || emoji;
+          const isSelected = selectedValue === emoji ? "selected" : "";
+          return `<option value="${emoji}" ${isSelected}>${emoji} ${label}</option>`;
+        }).join("");
+      }
 
       function createCharacter(name, index, id = index + 1) {
         return {
@@ -125,7 +327,9 @@
           vitality: 70 + ((index * 11) % 25),
           vitalityMax: 100,
           lucidity: 55 + ((index * 7) % 35),
-          lucidityMax: 100
+          lucidityMax: 100,
+          emojiAuraEnabled: false,
+          emojiAuraEmoji: "💥"
         };
       }
 
@@ -139,7 +343,16 @@
         textOutlineColor: "#111827",
         displayMode: "values",
         imageDataUrl: "",
-        characters: initialCharacters
+        damageEmoji: "💥",
+        damageEffect: null,
+        characters: initialCharacters,
+        bossName: "Boss",
+        bossMovement: "none",
+        bossAfterImageMode: "none",
+        bossAfterImageModes: ["bruta"],
+        bossAfterImageColor: "#ff4d4d",
+        turnOrder: [],
+        activeTurnIndex: -1
       };
 
       const currentHpInput = document.getElementById("currentHp");
@@ -158,6 +371,9 @@
       const previewLabel = document.getElementById("previewLabel");
       const previewValue = document.getElementById("previewValue");
       const previewBar = document.getElementById("previewBar");
+      const damageAmountInput = document.getElementById("damageAmount");
+      const damageEmojiSelect = document.getElementById("damageEmoji");
+      const confirmDamageBtn = document.getElementById("confirmDamageBtn");
       const openDisplayBtn = document.getElementById("openDisplayBtn");
       const displayModeInputs = Array.from(document.querySelectorAll('input[name="displayMode"]'));
       const imageDropzone = document.getElementById("imageDropzone");
@@ -165,14 +381,49 @@
       const imagePreview = document.getElementById("imagePreview");
       const clearImageBtn = document.getElementById("clearImageBtn");
       const characterSlotsContainer = document.getElementById("characterSlots");
+      const turnOrderList = document.getElementById("turnOrderList");
+      const nextTurnBtn = document.getElementById("nextTurnBtn");
+      const bossNameInput = document.getElementById("bossNameInput");
+      const bossMovementSelect = document.getElementById("bossMovementSelect");
+      const bossAfterImageInputs = Array.from(document.querySelectorAll('input[name="bossAfterImageModes"]'));
+      const bossAfterImageColorInput = document.getElementById("bossAfterImageColorInput");
+      const bossAfterImageColorField = document.getElementById("bossAfterImageColorField");
       let activeCharacterIndex = null;
+      let draggedTurnEntryId = null;
 
       function clampCurrent() {
         state.currentHp = Math.max(0, Math.min(state.currentHp, state.maxHp));
       }
 
+      function getPercentValue(currentValue, maxValue) {
+        const value = Number(currentValue) || 0;
+        const max = Number(maxValue) || 0;
+        if (max <= 0) {
+          return 0;
+        }
+
+        return Math.max(0, Math.min(100, (value / max) * 100));
+      }
+
       function getPercent() {
-        return state.maxHp > 0 ? Math.max(0, Math.min(100, (state.currentHp / state.maxHp) * 100)) : 0;
+        return getPercentValue(state.currentHp, state.maxHp);
+      }
+
+      function syncBossAfterImageControls() {
+        const modes = normalizeBossAfterImageModes(state.bossAfterImageModes ?? state.bossAfterImageMode, ["bruta"]);
+        bossAfterImageInputs.forEach((input) => {
+          input.checked = modes.includes(input.value);
+        });
+        if (bossAfterImageColorInput) {
+          bossAfterImageColorInput.value = state.bossAfterImageColor || "#ff4d4d";
+        }
+        if (bossAfterImageColorField) {
+          bossAfterImageColorField.hidden = !modes.includes("colorida");
+        }
+        const bossAfterImageColorValue = document.getElementById("bossAfterImageColorValue");
+        if (bossAfterImageColorValue) {
+          bossAfterImageColorValue.textContent = state.bossAfterImageColor || "#ff4d4d";
+        }
       }
 
       function syncControls() {
@@ -184,6 +435,14 @@
         barLabelInput.value = state.label;
         textOutlineColorInput.value = state.textOutlineColor || "#111827";
         textOutlineValue.textContent = state.textOutlineColor || "#111827";
+        if (damageEmojiSelect) {
+          damageEmojiSelect.innerHTML = buildEmojiOptions(state.damageEmoji || "💥");
+          damageEmojiSelect.value = state.damageEmoji || "💥";
+        }
+        if (bossMovementSelect) {
+          bossMovementSelect.value = state.bossMovement || "none";
+        }
+        syncBossAfterImageControls();
         displayModeInputs.forEach((input) => {
           input.checked = input.value === state.displayMode;
         });
@@ -217,6 +476,95 @@
         return `${state.currentHp} / ${state.maxHp}`;
       }
 
+      function getTurnEntries() {
+        const baseEntries = state.characters.map((character, index) => ({
+          id: `character-${character.id ?? index + 1}`,
+          type: "character",
+          name: character.name || `Personagem ${index + 1}`,
+          characterIndex: index
+        }));
+        const bossEntry = {
+          id: "boss",
+          type: "boss",
+          name: state.bossName || "Boss",
+          characterIndex: null
+        };
+
+        const allEntries = [...baseEntries, bossEntry];
+        const orderedEntries = [];
+        const seenIds = new Set();
+
+        (Array.isArray(state.turnOrder) ? state.turnOrder : []).forEach((entry) => {
+          const match = allEntries.find((candidate) => candidate.id === entry.id);
+          if (match && !seenIds.has(match.id)) {
+            orderedEntries.push(match);
+            seenIds.add(match.id);
+          }
+        });
+
+        allEntries.forEach((entry) => {
+          if (!seenIds.has(entry.id)) {
+            orderedEntries.push(entry);
+            seenIds.add(entry.id);
+          }
+        });
+
+        return orderedEntries;
+      }
+
+      function renderTurnOrderList() {
+        const entries = getTurnEntries();
+        if (!entries.length) {
+          turnOrderList.innerHTML = '<p class="turn-order-empty">Nenhuma entrada na rodada.</p>';
+          return;
+        }
+
+        if (state.activeTurnIndex < 0 || state.activeTurnIndex >= entries.length) {
+          state.activeTurnIndex = 0;
+        }
+
+        turnOrderList.innerHTML = entries
+          .map((entry, index) => {
+            const isActive = index === state.activeTurnIndex;
+            const isBoss = entry.type === "boss";
+            return `
+              <div class="turn-entry ${isActive ? "is-active" : ""} ${isBoss ? "is-boss" : ""}" data-entry-id="${entry.id}" draggable="true" role="listitem">
+                <div class="turn-entry-main">
+                  <span class="turn-entry-badge">${entry.type === "boss" ? "B" : "P"}</span>
+                  <span class="turn-entry-name">${entry.name}</span>
+                </div>
+                <span class="turn-entry-handle">⋮⋮</span>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function reorderTurnEntries(fromId, targetId) {
+        const entries = getTurnEntries();
+        const fromIndex = entries.findIndex((entry) => entry.id === fromId);
+        const targetIndex = entries.findIndex((entry) => entry.id === targetId);
+
+        if (fromIndex < 0 || targetIndex < 0 || fromIndex === targetIndex) {
+          return;
+        }
+
+        const [movedEntry] = entries.splice(fromIndex, 1);
+        entries.splice(targetIndex, 0, movedEntry);
+        state.turnOrder = entries.map((entry) => ({ id: entry.id }));
+        publishState();
+      }
+
+      function advanceTurn() {
+        const entries = getTurnEntries();
+        if (!entries.length) {
+          return;
+        }
+
+        state.activeTurnIndex = (state.activeTurnIndex + 1) % entries.length;
+        publishState();
+      }
+
       function renderCharacterSlots() {
         const slotsMarkup = state.characters
           .map((character, index) => {
@@ -224,8 +572,8 @@
             const vitalityMax = Number(character.vitalityMax ?? 100);
             const lucidity = Number(character.lucidity ?? character.sanity ?? 0);
             const lucidityMax = Number(character.lucidityMax ?? 100);
-            const vitalityPercent = vitalityMax > 0 ? Math.max(0, Math.min(100, (vitality / vitalityMax) * 100)) : 0;
-            const lucidityPercent = lucidityMax > 0 ? Math.max(0, Math.min(100, (lucidity / lucidityMax) * 100)) : 0;
+            const vitalityPercent = getPercentValue(vitality, vitalityMax);
+            const lucidityPercent = getPercentValue(lucidity, lucidityMax);
 
             return `
               <article class="character-slot">
@@ -241,6 +589,18 @@
                     <span>Nome</span>
                     <input class="character-name-input" data-character-index="${index}" type="text" value="${character.name}" maxlength="24" />
                   </label>
+                  <div class="character-emoji-controls">
+                    <label class="character-emoji-toggle">
+                      <input class="character-emoji-toggle-input" data-character-index="${index}" data-field="emojiAuraEnabled" type="checkbox" ${character.emojiAuraEnabled ? "checked" : ""} />
+                      <span>Emanar emoji</span>
+                    </label>
+                    <label class="character-emoji-select-row">
+                      <span>Emoji</span>
+                      <select class="character-emoji-select" data-character-index="${index}">
+                        ${buildEmojiOptions(character.emojiAuraEmoji || "💥")}
+                      </select>
+                    </label>
+                  </div>
                   <div class="character-stat">
                     <span>Vitalidade</span>
                     <div class="character-bar-track">
@@ -302,8 +662,16 @@
         imageDropzone.classList.add("has-image");
       }
 
+      function normalizeAfterImageState() {
+        const modes = normalizeBossAfterImageModes(state.bossAfterImageModes ?? state.bossAfterImageMode, ["bruta"]);
+        state.bossAfterImageModes = modes;
+        state.bossAfterImageMode = modes.length ? modes[0] : "none";
+        state.bossAfterImageColor = state.bossAfterImageColor || "#ff4d4d";
+      }
+
       function publishState() {
         clampCurrent();
+        normalizeAfterImageState();
         localStorage.setItem(storageKey, JSON.stringify(state));
         if (broadcastChannel) {
           broadcastChannel.postMessage(state);
@@ -312,15 +680,18 @@
         syncPreview();
         updateImagePreview();
         renderCharacterSlots();
+        renderTurnOrderList();
       }
 
       function applyState(nextState) {
         Object.assign(state, nextState);
         clampCurrent();
+        normalizeAfterImageState();
         syncControls();
         syncPreview();
         updateImagePreview();
         renderCharacterSlots();
+        renderTurnOrderList();
       }
 
       function readInputs() {
@@ -358,7 +729,7 @@
         reader.readAsDataURL(file);
       }
 
-      function updateCharacterStat(index, field, value) {
+      function updateCharacterStat(index, field, value, publish = true) {
         const character = state.characters[index];
         if (!character) {
           return;
@@ -374,7 +745,26 @@
           character.lucidityMax = Math.max(1, Number(value) || 1);
         }
 
-        publishState();
+        if (publish) {
+          publishState();
+        }
+      }
+
+      function updateCharacterEmoji(index, field, value, publish = true) {
+        const character = state.characters[index];
+        if (!character) {
+          return;
+        }
+
+        if (field === "emojiAuraEnabled") {
+          character.emojiAuraEnabled = Boolean(value);
+        } else if (field === "emojiAuraEmoji") {
+          character.emojiAuraEmoji = String(value || "💥");
+        }
+
+        if (publish) {
+          publishState();
+        }
       }
 
       function addCharacter() {
@@ -424,6 +814,34 @@
         readInputs();
         publishState();
       });
+
+      if (confirmDamageBtn) {
+        confirmDamageBtn.addEventListener("click", () => {
+          const damage = Math.max(0, Number(damageAmountInput.value) || 0);
+          if (damage > 0) {
+            state.currentHp = Math.max(0, state.currentHp - damage);
+            state.damageEmoji = damageEmojiSelect?.value || "💥";
+            state.damageEffect = {
+              emoji: state.damageEmoji,
+              damage,
+              id: Date.now()
+            };
+            const effectId = state.damageEffect.id;
+            damageAmountInput.value = "";
+            publishState();
+
+            // Limpa o efeito de dano no remetente após curto atraso
+            // para evitar que ele seja re-publicado novamente (causando
+            // re-trigger na outra aba quando avançar a rodada).
+            window.setTimeout(() => {
+              if (state.damageEffect && state.damageEffect.id === effectId) {
+                state.damageEffect = null;
+                publishState();
+              }
+            }, 600);
+          }
+        });
+      }
 
       // Botão de confirmar para aplicar o valor numérico
       if (confirmCurrentHpBtn) {
@@ -556,13 +974,26 @@
 
       characterSlotsContainer.addEventListener("change", (event) => {
         const input = event.target.closest(".character-file-input");
-        if (!input) {
+        if (input) {
+          const [file] = event.target.files || [];
+          handleCharacterImageFile(file, Number(input.dataset.characterIndex));
+          event.target.value = "";
           return;
         }
 
-        const [file] = event.target.files || [];
-        handleCharacterImageFile(file, Number(input.dataset.characterIndex));
-        event.target.value = "";
+        const emojiToggle = event.target.closest(".character-emoji-toggle-input");
+        if (emojiToggle) {
+          const index = Number(emojiToggle.dataset.characterIndex);
+          updateCharacterEmoji(index, emojiToggle.dataset.field, emojiToggle.checked, true);
+          return;
+        }
+
+        const emojiSelect = event.target.closest(".character-emoji-select");
+        if (emojiSelect) {
+          const index = Number(emojiSelect.dataset.characterIndex);
+          updateCharacterEmoji(index, "emojiAuraEmoji", emojiSelect.value, true);
+          return;
+        }
       });
 
       characterSlotsContainer.addEventListener("input", (event) => {
@@ -572,10 +1003,17 @@
         }
 
         const index = Number(statInput.dataset.characterIndex);
-        updateCharacterStat(index, statInput.dataset.field, statInput.value);
+        updateCharacterStat(index, statInput.dataset.field, statInput.value, false);
       });
 
       characterSlotsContainer.addEventListener("change", (event) => {
+        const statInput = event.target.closest("input[data-field]");
+        if (statInput) {
+          const index = Number(statInput.dataset.characterIndex);
+          updateCharacterStat(index, statInput.dataset.field, statInput.value, true);
+          return;
+        }
+
         const nameInput = event.target.closest(".character-name-input");
         if (!nameInput) {
           return;
@@ -598,6 +1036,85 @@
         }
       });
 
+      turnOrderList.addEventListener("dragstart", (event) => {
+        const entry = event.target.closest(".turn-entry");
+        if (!entry) {
+          return;
+        }
+
+        draggedTurnEntryId = entry.dataset.entryId;
+        entry.classList.add("dragging");
+        event.dataTransfer?.setData("text/plain", draggedTurnEntryId);
+        event.dataTransfer.effectAllowed = "move";
+      });
+
+      turnOrderList.addEventListener("dragover", (event) => {
+        const entry = event.target.closest(".turn-entry");
+        if (!entry) {
+          return;
+        }
+
+        event.preventDefault();
+        turnOrderList.querySelectorAll(".turn-entry").forEach((item) => item.classList.remove("drag-over"));
+        entry.classList.add("drag-over");
+      });
+
+      turnOrderList.addEventListener("drop", (event) => {
+        const entry = event.target.closest(".turn-entry");
+        if (!entry || !draggedTurnEntryId) {
+          return;
+        }
+
+        event.preventDefault();
+        const targetId = entry.dataset.entryId;
+        reorderTurnEntries(draggedTurnEntryId, targetId);
+        draggedTurnEntryId = null;
+      });
+
+      turnOrderList.addEventListener("dragend", () => {
+        draggedTurnEntryId = null;
+        turnOrderList.querySelectorAll(".turn-entry").forEach((item) => item.classList.remove("dragging", "drag-over"));
+      });
+
+      if (nextTurnBtn) {
+        nextTurnBtn.addEventListener("click", advanceTurn);
+      }
+
+      if (bossNameInput) {
+        bossNameInput.addEventListener("input", (event) => {
+          state.bossName = event.target.value || "Boss";
+          publishState();
+        });
+      }
+
+      if (bossMovementSelect) {
+        bossMovementSelect.addEventListener("change", (event) => {
+          state.bossMovement = event.target.value || "none";
+          publishState();
+        });
+      }
+
+      function updateBossAfterImageSelection(event) {
+        const selectedValues = bossAfterImageInputs.filter((input) => input.checked).map((input) => input.value);
+        const changedValue = event?.target?.value || null;
+        const modes = normalizeBossAfterImageModes(selectedValues, ["bruta"], changedValue);
+        state.bossAfterImageModes = modes;
+        state.bossAfterImageMode = modes.length ? modes[0] : "none";
+        publishState();
+      }
+
+      bossAfterImageInputs.forEach((input) => {
+        input.addEventListener("change", updateBossAfterImageSelection);
+      });
+
+      if (bossAfterImageColorInput) {
+        bossAfterImageColorInput.addEventListener("input", () => {
+          state.bossAfterImageColor = bossAfterImageColorInput.value || "#ff4d4d";
+          syncBossAfterImageControls();
+          publishState();
+        });
+      }
+
       window.addEventListener("paste", (event) => {
         const clipboardFiles = Array.from(event.clipboardData?.files || []);
         const imageFile = clipboardFiles.find((file) => file.type.startsWith("image/"));
@@ -617,7 +1134,15 @@
           color: state.color,
           label: state.label,
           textOutlineColor: state.textOutlineColor || "#111827",
-          displayMode: state.displayMode
+          displayMode: state.displayMode,
+          bossName: state.bossName || "Boss",
+          bossMovement: state.bossMovement || "none",
+          bossAfterImageMode: state.bossAfterImageMode || "none",
+          bossAfterImageModes: JSON.stringify(state.bossAfterImageModes || []),
+          bossAfterImageColor: state.bossAfterImageColor || "#ff4d4d",
+          activeTurnIndex: String(state.activeTurnIndex ?? 0),
+          turnOrder: JSON.stringify(state.turnOrder || []),
+          characters: JSON.stringify(state.characters || [])
         });
         window.open(`display.html?${params.toString()}`, "_blank", "noopener,noreferrer");
       });
